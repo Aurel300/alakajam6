@@ -1,0 +1,11 @@
+-dce full
+-D js-es=6
+-D analyzer-optimize
+-D PLU_PLATFORM=js.canvas
+-lib plu.std
+--macro plu.plat.js.canvas.Platform.init()
+-lib plu
+--macro plu.PlatformDefinition.init()
+-lib plu.jam
+-main Main
+-js ../bin/game.js

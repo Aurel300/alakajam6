@@ -1,8 +1,8 @@
 # Alakajam! 6 #
 
-Theme: Duel
-Setting: `C Y B E R P U N K`
-Genre: Point 'n Click + TBS/puzzle-ish
+ - Theme: Duel
+ - Setting: `C Y B E R P U N K`
+ - Genre: Point 'n Click + TBS/puzzle-ish
 
 ## Synopsis ##
 
