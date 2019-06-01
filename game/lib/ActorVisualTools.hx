@@ -22,6 +22,12 @@ class ActorVisualTools {
       case "metro-bg": {x: 0, y: 0, w: 400, h: 300};
       case "metro-area": {x: index * 32, y: 304, w: 32, h: 32};
       case "metro-train": {x: 96, y: 304, w: 16, h: 16};
+      case "cyber-tile0": {x: index * 24, y: 0, w: 24, h: 32};
+      case "cyber-tile1": {x: index * 24, y: 32, w: 24, h: 32};
+      case "cyber-tile2": {x: index * 24, y: 64, w: 24, h: 32};
+      case "cyber-tile3": {x: index * 24, y: 96, w: 24, h: 32};
+      case "cyber-tile-bridge-v": {x: 72, y: index * 8, w: 8, h: 8};
+      case "cyber-tile-bridge-h": {x: 80 + index * 4, y: 0, w: 4, h: 9};
       case _: throw 'no such visual $of';
     });
     return {source: of.split("-")[0], x: pos.x, y: pos.y, w: pos.w, h: pos.h};

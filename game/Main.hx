@@ -12,6 +12,7 @@ class Main {
         bitmaps: [
            {alias: "character", url: "png/character.png"}
           ,{alias: "metro", url: "png/metro.png"}
+          ,{alias: "cyber", url: "png/cyber.png"}
         ]
       }
     });

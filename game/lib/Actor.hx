@@ -2,7 +2,7 @@ package lib;
 
 class Actor {
   static function reload():Void {
-    BMP_SOURCES = [ for (k in ["character", "metro"]) k => Platform.assets.bitmaps[k] ];
+    BMP_SOURCES = [ for (k in ["character", "metro", "cyber"]) k => Platform.assets.bitmaps[k] ];
     //var palSrc = c.cut(0, 112, 64, 1).get();
     //PAL = [ for (i in 0...14) palSrc[i * 3] ];
     BMP_CACHE = [];

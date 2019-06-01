@@ -54,8 +54,8 @@ class UI {
       hystCache[id].setTo(target());
       return hystCache[id].tickI();
     }
-    mouseHover = null;
-    onClick = null;
+    var nextMouseHover = null;
+    var nextOnClick = null;
     function walk(id:String, uix:Array<UIX>):Void {
       var mx = this.mx - topXY.x;
       var my = this.my - topXY.y;
@@ -78,8 +78,8 @@ class UI {
           var hover = mx.withinIE(0, vis.w) && my.withinIE(0, vis.h);
           if (mouseHold == null || mouseHold == subid) {
             if (hover) {
-              mouseHover = subid;
-              onClick = click;
+              nextMouseHover = subid;
+              nextOnClick = click;
             }
           }
           var actor = subid.singletonI(actor, topXY.x, topXY.y, mouseHold == subid ? 2 : (mouseHover == subid ? 1 : 0));
@@ -93,5 +93,7 @@ class UI {
       }
     }
     walk("root", uix);
+    mouseHover = nextMouseHover;
+    onClick = nextOnClick;
   }
 }
