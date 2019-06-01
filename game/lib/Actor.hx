@@ -2,8 +2,7 @@ package lib;
 
 class Actor {
   static function reload():Void {
-    var c = Platform.assets.bitmaps["character"];
-    BMP_SOURCE = c;
+    BMP_SOURCES = [ for (k in ["character", "metro"]) k => Platform.assets.bitmaps[k] ];
     //var palSrc = c.cut(0, 112, 64, 1).get();
     //PAL = [ for (i in 0...14) palSrc[i * 3] ];
     BMP_CACHE = [];
@@ -18,13 +17,13 @@ class Actor {
       }];
   }
   
-  static var BMP_SOURCE:Bitmap;
+  static var BMP_SOURCES:Map<String, Bitmap>;
   public static var PAL:Array<Colour>;
   public static var PARTICLES:Map<String, Bitmap> = null;
   static var BMP_CACHE:Map<String, Bitmap> = [];
   
   public static function generate(to:ActorVisual):Bitmap {
-    var ret = BMP_SOURCE.cut(to.x, to.y, to.w, to.h);
+    var ret = BMP_SOURCES[to.source].cut(to.x, to.y, to.w, to.h);
     return ret.lock();
   }
   

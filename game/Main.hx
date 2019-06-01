@@ -10,7 +10,8 @@ class Main {
        window: {width: 400, height: 300, scale: 2}
       ,assets: {
         bitmaps: [
-          {alias: "character", url: "png/character.png"}
+           {alias: "character", url: "png/character.png"}
+          ,{alias: "metro", url: "png/metro.png"}
         ]
       }
     });
