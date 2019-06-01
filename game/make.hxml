@@ -1,3 +1,4 @@
+--connect 6000
 -dce full
 -D js-es=6
 -D analyzer-optimize

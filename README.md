@@ -68,3 +68,18 @@ People
  - characters
    - hand-drawn
    - maybe post-process?
+
+## TODO ##
+
+ - graphics
+   - backgrounds
+     - home, bar, checkpoint, AIC0, hospital, metro ...
+   - characters
+     - protagonist, braman, ...
+   - fx
+     - pixel crunch light
+ - UI
+   - dialogue (speech bubble + HTML text overlay)
+ - scenario
+   - dialogues
+   - main plot points

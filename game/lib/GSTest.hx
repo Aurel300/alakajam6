@@ -5,6 +5,10 @@ class GSTest extends GameState {
     
   }
   
+  override public function load():Void {
+    Scenario.init();
+  }
+  
   var ph = 0;
   override public function tick(delta:Float):Void {
     var win = Platform.window;
