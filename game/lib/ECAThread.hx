@@ -32,7 +32,6 @@ class ECAThread {
       }
     }
     walk(eca.actions);
-    trace(referenced);
     for (r in referenced) if (!labels.exists(r)) throw 'no such label $r';
   }
   
@@ -57,18 +56,23 @@ class ECAThread {
     ECA.threads.remove(this);
   }
   
-  public function run():Void {
-    if (suspended) {
-      return;
-    }
+  function checkEnd():Bool {
     if (position.length == 0) {
       if (labels.exists("-repeat")) {
         position = labels["-repeat"].copy();
       } else {
         terminate();
-        return;
+        return true;
       }
     }
+    return false;
+  }
+  
+  public function run():Void {
+    if (suspended) {
+      return;
+    }
+    if (checkEnd()) return;
     while (true) {
       var posStack = getStack();
       var top = posStack[posStack.length - 1];
@@ -106,22 +110,25 @@ class ECAThread {
       }
       if (suspended) break;
     }
+    if (!suspended && !checkEnd()) run();
   }
   
   public function exec(action:ECAAction):Void {
     switch (action) {
       case Func(f): f(eca, this);
-      case Next(ecas):
+      case Next(ecas, s):
       suspendedECA = [ for (e in ecas) ECA.registerE(e, this) ];
-      suspend();
+      if (s == null || s) suspend();
       case Wait(ticks):
       ECA.schedule(ticks, this);
       suspend();
       case WaitFor(e, c):
       suspendedECA = [ ECA.registerT(e, c, this) ];
       suspend();
+      case BlockRoom(b):
+      g.renRoom.blocked = (b != null && b);
       case Say(msg, from):
-      trace(msg, from);
+      g.renRoom.sayBy(msg, Character.chars[from != null ? from : Player]);
       case _: 'cannot exec $action';
     }
   }

@@ -9,5 +9,6 @@ enum abstract RoomName(String) from String {
 }
 
 enum abstract CharName(String) from String {
+  var Player;
   var Bobbard;
 }

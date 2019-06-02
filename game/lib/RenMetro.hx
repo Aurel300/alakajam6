@@ -1,6 +1,6 @@
 package lib;
 
-typedef MapArea = {id:String, name:String, desc:String, x:Int, y:Int, ?stopX:Int, ?stopY:Int};
+typedef MapArea = {id:String, name:String, nameAbove:Bool, desc:String, x:Int, y:Int, ?stopX:Int, ?stopY:Int};
 
 class RenMetro extends Ren {
   static final metroWidth = 35;
@@ -33,14 +33,14 @@ class RenMetro extends Ren {
     ,"hospital-outside"
   ];
   static var mapAreas:Array<MapArea> = [
-     {id: "clinic-outside", name: "Butch's Practice", desc: "...", x: 200, y: 72}
-    ,{id: "home-outside", name: "Manor Sector (Home)", desc: "...", x: 312, y: 72}
-    ,{id: "aico", name: "AIC0 Complex", desc: "...", x: 56, y: 88}
-    ,{id: "checkpoint-outside", name: "Military Checkpoint", desc: "...", x: 96, y: 88}
-    ,{id: "police-outside", name: "Police Station", desc: "...", x: 112, y: 136}
-    ,{id: "kino-outside", name: "Kino7", desc: "...", x: 272, y: 144}
-    ,{id: "hospital-outside", name: "St Josh Hospital", desc: "...", x: 192, y: 208}
-    ,{id: "bar-outside", name: "Bobbard's Bar", desc: "...", x: 304, y: 216}
+     {id: "clinic-outside", name: "Butch's Practice", nameAbove: true, desc: "...", x: 200, y: 72}
+    ,{id: "home-outside", name: "Manor Sector (Home)", nameAbove: true, desc: "...", x: 312, y: 72}
+    ,{id: "aico", name: "AIC0 Complex", nameAbove: false, desc: "...", x: 56, y: 88}
+    ,{id: "checkpoint-outside", name: "Military Checkpoint", nameAbove: true, desc: "...", x: 96, y: 88}
+    ,{id: "police-outside", name: "Police Station", nameAbove: true, desc: "...", x: 112, y: 136}
+    ,{id: "kino-outside", name: "Kino7", nameAbove: false, desc: "...", x: 272, y: 144}
+    ,{id: "hospital-outside", name: "St Josh Hospital", nameAbove: true, desc: "...", x: 192, y: 208}
+    ,{id: "bar-outside", name: "Bobbard's Bar", nameAbove: false, desc: "...", x: 304, y: 216}
   ];
   static var mapAreasM:Map<String, MapArea>;
   
@@ -75,7 +75,10 @@ class RenMetro extends Ren {
     }
   }
   
-  function arrival():Void trace("here");
+  function arrival():Void {
+    g.showMetro.setTo(false);
+    trace("here");
+  }
   
   public function new() {
     mapAreasM = [ for (a in mapAreas) a.id => a ];
@@ -101,9 +104,12 @@ class RenMetro extends Ren {
     ui = new UI([
        Singleton("metro-bg")
       ,Group([ for (a in mapAreas) {
-        UIX.At(a.x - 4, a.y - 4, [Button(() -> {
-          if (a.stopX != null) pathfind(a.stopX, a.stopY);
-        }, "metro-area")]);
+        var hover = false;
+        UIX.At(a.x - 4, a.y - 4, [
+           Button(() -> if (a.stopX != null) pathfind(a.stopX, a.stopY), (hv, hl) -> hover = hv, "metro-area")
+          ,At(-16, a.nameAbove ? -4 : 32, [TextD(() -> a.name, () -> hover ? "metro stroke center hover" : "metro stroke center", () -> 64, () -> 32)])
+          ,At(-16, a.nameAbove ? -4 : 32, [TextD(() -> a.name, () -> hover ? "metro center hover" : "metro center", () -> 64, () -> 32)])
+        ]);
       } ])
       ,HystX(() -> metroTX * 8 + 100 - 8, .9, [HystY(() -> metroTY * 8 + 100 - 8, .9, [Singleton("metro-train")])])
     ]);

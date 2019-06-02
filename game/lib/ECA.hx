@@ -53,7 +53,7 @@ class ECA {
   public static function handleEvent(e:ECAEvent):Void {
     for (r in registered) {
       if (!r.event(e) || !r.cond()) continue;
-      if (r.eca != null) r.eca.run(r.thread);
+      if (r.eca != null) r.eca.run(r.thread).run();
       if (r.thread != null) r.thread.wakeup();
     }
   }

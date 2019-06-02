@@ -11,9 +11,12 @@ enum UIX {
   IfO(_:()->Bool, ?ratio:Float, sub:Array<UIX>);
   Opacity(o:Float, sub:Array<UIX>);
   HystOpacity(target:()->Float, ?ratio:Float, sub:Array<UIX>);
-  Button(click:()->Void, actor:String);
+  Button(click:()->Void, ?state:(hover:Bool, hold:Bool)->Void, ?deadzone:Int, actor:String);
+  ButtonI(click:()->Void, ?state:(hover:Bool, hold:Bool)->Void, w:Int, h:Int);
   Singleton(actor:String, ?index:Int);
-  Text(txt:String, w:Int, h:Int);
+  Text(txt:String, ?cls:String, w:Int, h:Int);
+  TextD(txt:()->String, ?cls:()->String, w:()->Int, h:()->Int);
   Group(?id:String, sub:Array<UIX>);
   Lazy(?id:String, sub:()->Array<UIX>);
+  Fill(c:Colour);
 }

@@ -69,17 +69,25 @@ People
    - hand-drawn
    - maybe post-process?
 
+## Music ##
+
+ - [ ] cyber duel - battle music, hackery, tactical combat
+ - [ ] home - chill, downtempo, ambient
+ - [ ] bar - techno, rave party
+ - [ ] checkpoint - stealthy ambience
+ - [x] metro - ambience + noise
+
+ - [ ] jack-in - when entering the cyber-space
+   - [ ] leaving cyberspace successful
+   - [ ] leaving cyberspace failure
+
 ## TODO ##
 
  - graphics
    - backgrounds
      - home, bar, checkpoint, AIC0, hospital, metro ...
    - characters
-     - protagonist, braman, ...
-   - fx
-     - pixel crunch light
- - UI
-   - dialogue (speech bubble + HTML text overlay)
+     - protagonist, barman, ...
  - scenario
    - dialogues
    - main plot points

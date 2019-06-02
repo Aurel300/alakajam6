@@ -1,7 +1,5 @@
 package lib;
 
-import plu.anim.*;
-
 class UI {
   public var uix:Array<UIX>;
   public var mouseHover:String;
@@ -14,9 +12,13 @@ class UI {
   //var emitterMouseHover:Emitter<String>;
   //var emitterMouseLeave:Emitter<String>;
   var hystCache:Map<String, Hyst> = [];
+  var htmlCache:Map<String, {x:Int, y:Int, w:Int, h:Int, txt:String, cls:String, el:js.html.Element}> = [];
+  var htmlLastTick:Array<String> = [];
   var mx:Int;
   var my:Int;
   var onClick:()->Void;
+  
+  static var htmlRoot = js.Browser.document.querySelector("#texts");
   
   public function new(uix:Array<UIX>) {
     this.uix = uix;
@@ -54,6 +56,24 @@ class UI {
       hystCache[id].setTo(target());
       return hystCache[id].tickI();
     }
+    var htmlTick = [];
+    function html(id:String, txt:String, cls:String, w:Int, h:Int):Void {
+      var force = false;
+      var c = null;
+      if (!htmlCache.exists(id)) {
+        var el = js.Browser.document.createElement("div");
+        htmlRoot.appendChild(el);
+        force = true;
+        htmlCache[id] = c = {x: topXY.x, y: topXY.y, w: w, h: h, txt: txt, cls: cls, el: el};
+      } else c = htmlCache[id];
+      htmlTick.push(id);
+      if (force || c.x != topXY.x) { c.el.style.left = '${topXY.x * 2}px'; c.x = topXY.x; }
+      if (force || c.y != topXY.y) { c.el.style.top = '${topXY.y * 2}px'; c.y = topXY.y; }
+      if (force || c.w != w) { c.el.style.width = '${w * 2}px'; c.w = w; }
+      if (force || c.h != h) { c.el.style.height = '${h * 2}px'; c.h = h; }
+      if (force || c.txt != txt) { c.el.innerHTML = txt; c.txt = txt; }
+      if (force || c.cls != cls) { c.el.className = cls; c.cls = cls; }
+    }
     var nextMouseHover = null;
     var nextOnClick = null;
     function walk(id:String, uix:Array<UIX>):Void {
@@ -73,26 +93,45 @@ class UI {
           case IfO(c, ratio, sub): throw "!";
           case Opacity(o, sub): throw "!";
           case HystOpacity(target, ratio, sub): throw "!";
-          case Button(click, actor):
+          case Button(click, state, deadzone, actor):
+          if (deadzone == null) deadzone = 0;
           var vis = actor.visual();
-          var hover = mx.withinIE(0, vis.w) && my.withinIE(0, vis.h);
+          var hover = mx.withinIE(deadzone, vis.w - deadzone) && my.withinIE(deadzone, vis.h - deadzone);
           if (mouseHold == null || mouseHold == subid) {
             if (hover) {
               nextMouseHover = subid;
               nextOnClick = click;
             }
           }
+          if (state != null) state(mouseHover == subid, mouseHold == subid);
           var actor = subid.singletonI(actor, topXY.x, topXY.y, mouseHold == subid ? 2 : (mouseHover == subid ? 1 : 0));
           actor.render(to);
+          case ButtonI(click, state, w, h):
+          var hover = mx.withinIE(0, w) && my.withinIE(0, h);
+          if (mouseHold == null || mouseHold == subid) {
+            if (hover) {
+              nextMouseHover = subid;
+              nextOnClick = click;
+            }
+          }
+          if (state != null) state(mouseHover == subid, mouseHold == subid);
           case Singleton(actor, index): subid.singletonI(actor, topXY.x, topXY.y, index).render(to);
-          case Text(txt, w, h): throw "!";
+          case Text(txt, cls, w, h): html(subid, txt, cls, w, h);
+          case TextD(txt, cls, w, h): html(subid, txt(), cls != null ? cls() : null, w(), h());
           case Group(rid, sub): walk(rid != null ? rid : subid, sub);
           case Lazy(rid, sub): walk(rid != null ? rid : subid, sub());
+          case Fill(c): to.fill(c);
         }
         pos.pop();
       }
     }
     walk("root", uix);
+    for (h in htmlLastTick) {
+      if (htmlTick.indexOf(h) != -1) continue;
+      htmlCache[h].el.remove();
+      htmlCache.remove(h);
+    }
+    htmlLastTick = htmlTick;
     mouseHover = nextMouseHover;
     onClick = nextOnClick;
   }

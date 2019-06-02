@@ -2,7 +2,7 @@ package lib;
 
 class Actor {
   static function reload():Void {
-    BMP_SOURCES = [ for (k in ["character", "metro", "cyber"]) k => Platform.assets.bitmaps[k] ];
+    BMP_SOURCES = [ for (k in ["character", "metro", "cyber", "bgs"]) k => Platform.assets.bitmaps[k] ];
     //var palSrc = c.cut(0, 112, 64, 1).get();
     //PAL = [ for (i in 0...14) palSrc[i * 3] ];
     BMP_CACHE = [];
@@ -23,7 +23,16 @@ class Actor {
   static var BMP_CACHE:Map<String, Bitmap> = [];
   
   public static function generate(to:ActorVisual):Bitmap {
-    var ret = BMP_SOURCES[to.source].cut(to.x, to.y, to.w, to.h);
+    var ret = to.y < 0 ? null : BMP_SOURCES[to.source].cut(to.x, to.y, to.w.abs(), to.h);
+    if (to.w < 0) ret = ret.flipH();
+    if (to.light != null) {
+      var minLight = 0xB0;
+      var b = Bitmap.fromColour(to.w + 60, to.h + 72, to.light.setAi(minLight));
+      if (ret != null) b.blit(30, 36, ret.apply((col, x, y) -> {
+        to.light.setAi(minLight - ((col.ai / 0xFF) * minLight).floor());
+      }));
+      ret = b;
+    }
     return ret.lock();
   }
   
