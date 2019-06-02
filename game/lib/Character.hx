@@ -2,9 +2,15 @@ package lib;
 
 class Character {
   public static var chars = [
-    Player => new Character(Player, "character-dbg", [
+    Player => new Character(Player, "character-player", [
        "idle" => "0"
-      ,"walking" => "len:4 x:0 1 x:3 2 x:0 3 bail:1 x:6 4 bail:0 x:0 5 x:1 6 x:3 7 x:6 8"
+      //,"walking" => "len:4 x:0 1 x:3 2 x:0 3 bail:1 x:6 4 bail:0 x:0 5 x:1 6 x:3 7 x:6 8"
+      ,"walking" => "len:4 x:1 1 x:3 2 x:1 3 bail:1 x:7 4 bail:0 x:1 5 x:1 6 x:3 7 x:7 8"
+    ])
+    ,Bobbard => new Character(Player, "character-bobbard", [
+       "idle" => "next:idle-v 0"
+      ,"idle-v0" => "next:idle-v len:60 rlen:70 0 len:6 1"
+      ,"idle-v1" => "next:idle-v len:60 rlen:70 2 len:6 3"
     ])
   ];
   
@@ -26,16 +32,21 @@ class Character {
     animations = [ for (name => spec in specs) name => {
       var next = "idle";
       var len = 0;
+      var rlen = 0;
       var offX = 0;
       var bail = false;
       var frames = [ for (fspec in spec.split(" ")) {
-        if (fspec.startsWith("len:")) {  len = Std.parseInt(fspec.substr(4)); continue; }
+        if (fspec.startsWith("len:")) {  len = Std.parseInt(fspec.substr(4)); rlen = 0; continue; }
+        if (fspec.startsWith("rlen:")) { rlen = Std.parseInt(fspec.substr(5)); continue; }
         if (fspec.startsWith("x:")) {    offX = Std.parseInt(fspec.substr(2)); continue; }
         if (fspec.startsWith("bail:")) { bail = fspec.substr(5) == "1"; continue; }
+        if (fspec.startsWith("next:")) { next = fspec.substr(5); continue; }
         {
            index: Std.parseInt(fspec)
           ,offX: offX
           ,len: len
+          ,rlen: rlen
+          ,clen: len
           ,bail: bail
         }
       } ];
@@ -55,14 +66,20 @@ class Character {
   }
   
   function animate(id:String):Void {
-    if (!animations.exists(id)) throw 'no such animation $id';
+    if (!animations.exists(id)) {
+      var vars = 0;
+      while (animations.exists('$id$vars')) vars++;
+      trace(id, [ for (k in animations.keys()) k ]);
+      if (vars == 0) throw 'no such animation $id';
+      id = '$id${Std.random(vars)}';
+    }
     animation = animations[id];
     ph = 0;
     frame = 0;
   }
   
   public function place(atX:Int):Void {
-    x = atX;
+    x = targetX = atX;
     animate("idle");
   }
   
@@ -72,18 +89,17 @@ class Character {
     if (ph == 0) {
       if (animation.frames[frame].offX != 0) x += animation.frames[frame].offX * (facing ? 1 : -1);
       if (animation.frames[frame].bail && close) animate("idle");
+      animation.frames[frame].clen = animation.frames[frame].len + Std.random(animation.frames[frame].rlen);
     }
     var ret = [UIX.AtX(x - 20, [Singleton(facing ? actor : '$actor-fh', animation.frames[frame].index)])];
-    if (animation.id != "idle") {
-      if (animation.id != "idle") {
-        ph++;
-        if (ph >= animation.frames[frame].len) {
-          ph = 0;
-          frame++;
-          if (frame >= animation.frames.length) animate(animation.next);
-        }
+    //if (animation.id != "idle") {
+      ph++;
+      if (ph >= animation.frames[frame].clen) {
+        ph = 0;
+        frame++;
+        if (frame >= animation.frames.length) animate(animation.next);
       }
-    }
+    //}
     if (animation.id == "idle") {
       if (!close) {
         facing = xdist > 0;
@@ -109,5 +125,7 @@ typedef AFrame = {
    index:Int
   ,offX:Int
   ,len:Int
+  ,rlen:Int
+  ,clen:Int
   ,bail:Bool
 };

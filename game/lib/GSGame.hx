@@ -28,7 +28,8 @@ class GSGame extends GameState {
     renMetro = new RenMetro();
     renCyber = new RenCyber();
     //showCyber.setTo(true);
-    renRoom.loadRoom(Home);
+    //renRoom.loadRoom(Home);
+    renRoom.loadRoom(Bar);
   }
   
   var first = true;
@@ -46,6 +47,8 @@ class GSGame extends GameState {
       screenEl.style.height = '${nextScreenHeight * 2}px';
       lastScreenHeight = nextScreenHeight;
     }
+    
+    ECA.tick();
     
     if (visRoom) renRoom.tick();
     if (visMetro) renMetro.tick();

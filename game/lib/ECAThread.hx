@@ -6,9 +6,11 @@ class ECAThread {
   public var locals:Map<String, ECAValueE> = [];
   public var position:Array<Int> = [0];
   public var suspended:Bool = false;
+  public var suspendedWaitChild:Bool = false;
   public var suspendedECA:Array<lib.ECA.ECARegistered>;
   public var labels:Map<String, Array<Int>> = [];
   public var doAdvance:Bool;
+  public var onComplete:()->Void;
   
   public function new(eca:ECA, parent:ECAThread) {
     this.eca = eca;
@@ -38,14 +40,13 @@ class ECAThread {
   function getStack():Array<{?actions:Array<ECAAction>, ?action:ECAAction}> {
     var posStack:Array<{?actions:Array<ECAAction>, ?action:ECAAction}> = [{actions: eca.actions}];
     var top = posStack[0];
-    var current:ECAAction = null;
     for (index in position) {
       if (top.actions != null) {
         posStack.push(top = {action: top.actions[index]});
       } else {
-        posStack.push(top = {actions: switch (current) {
+        posStack.push(top = {actions: switch (top.action) {
           case Switch(branches): branches[index].a;
-          case _: throw 'invalid position: $position $current[$index]';
+          case _: throw 'invalid position: $position ${top.action}[$index]';
         }});
       }
     }
@@ -54,6 +55,7 @@ class ECAThread {
   
   public function terminate():Void {
     ECA.threads.remove(this);
+    if (onComplete != null) onComplete();
   }
   
   function checkEnd():Bool {
@@ -88,6 +90,10 @@ class ECAThread {
             break;
           }
         }
+        case Random(branches):
+        position.push(Std.random(branches.length));
+        position.push(0);
+        doAdvance = false;
         case GoTo(name):
         position = labels[name].copy();
         posStack = getStack();
@@ -102,6 +108,10 @@ class ECAThread {
           if (++position[position.length - 1] >= posStack[posStack.length - 1].actions.length) {
             position.pop();
             posStack.pop();
+            if (posStack.length > 0) switch (posStack[posStack.length - 1].action) {
+              case Switch(_) | Random(_): position.pop();
+              case _:
+            }
             posStack.pop();
             work = true;
           }
@@ -114,21 +124,33 @@ class ECAThread {
   }
   
   public function exec(action:ECAAction):Void {
+    function char(c:CharName):Character {
+      return Character.chars[c != null ? c : Player];
+    }
     switch (action) {
       case Func(f): f(eca, this);
-      case Next(ecas, s):
+      case Next(ecas, s, c):
       suspendedECA = [ for (e in ecas) ECA.registerE(e, this) ];
       if (s == null || s) suspend();
+      suspendedWaitChild = (c == null || c);
       case Wait(ticks):
       ECA.schedule(ticks, this);
       suspend();
       case WaitFor(e, c):
       suspendedECA = [ ECA.registerT(e, c, this) ];
       suspend();
-      case BlockRoom(b):
-      g.renRoom.blocked = (b != null && b);
-      case Say(msg, from):
-      g.renRoom.sayBy(msg, Character.chars[from != null ? from : Player]);
+      case WalkTo(x, char(_) => c, s):
+      if (s == null || s) {
+        suspend();
+        c.walk(x, wakeup.bind(null, true));
+      } else c.walk(x);
+      case Face(face, char(_) => c): c.targetFacing = face;
+      case BlockRoom(b): g.renRoom.blocked = (b == null || b);
+      case Say(msg, char(_) => from, s):
+      if (s == null || s) {
+        suspend();
+        g.renRoom.sayBy(msg, from, wakeup.bind(null, true));
+      } else g.renRoom.sayBy(msg, from);
       case _: 'cannot exec $action';
     }
   }
@@ -137,10 +159,15 @@ class ECAThread {
     suspended = true;
   }
   
-  public function wakeup(?runAfter:Bool = true):Void {
+  public function wakeup(?thread:ECAThread, ?runAfter:Bool = true):Void {
     if (suspendedECA != null) {
       suspendedECA.map(ECA.unregister);
       suspendedECA = null;
+    }
+    if (thread != null && suspendedWaitChild) {
+      suspendedWaitChild = false;
+      thread.onComplete = wakeup.bind(null, true);
+      return;
     }
     suspended = false;
     if (runAfter) run();

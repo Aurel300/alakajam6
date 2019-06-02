@@ -71,23 +71,41 @@ People
 
 ## Music ##
 
- - [ ] cyber duel - battle music, hackery, tactical combat
- - [ ] home - chill, downtempo, ambient
- - [ ] bar - techno, rave party
- - [ ] checkpoint - stealthy ambience
+ - [x] cyber duel - battle music, hackery, tactical combat
+ - [x] home - chill, downtempo, ambient
+ - [x] bar - techno, rave party
+ - [x] checkpoint - stealthy ambience
  - [x] metro - ambience + noise
+ - [x] jack-in - when entering the cyber-space
+ - [x] leaving cyberspace successful
+ - [ ] game over
+   - win
+   - dead
 
- - [ ] jack-in - when entering the cyber-space
-   - [ ] leaving cyberspace successful
-   - [ ] leaving cyberspace failure
+## Sfx ##
+
+ - duel
+   - [ ] unit move (each tile)
+   - [ ] unit attack
+   - [ ] unit destroyed
+   - [ ] credits collected
+ - ui
+   - [ ] button press
+   - [ ] panel moving (similar to door hiss below)
+ - [ ] speech - short generic, "phrases"
+ - [ ] RAIN AMBIENCE
+ - [ ] footstep
+ - [ ] rainy footstep
+ - [ ] lightbulb flicker (very short)
+ - [ ] door hiss - sci-fi door, open / close
 
 ## TODO ##
 
  - graphics
    - backgrounds
-     - home, bar, checkpoint, AIC0, hospital, metro ...
+     - checkpoint, AIC0, outside ...
    - characters
-     - protagonist, barman, ...
+     - soldier? ...
  - scenario
    - dialogues
    - main plot points

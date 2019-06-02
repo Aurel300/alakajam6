@@ -26,7 +26,8 @@ class Actor {
     var ret = to.y < 0 ? null : BMP_SOURCES[to.source].cut(to.x, to.y, to.w.abs(), to.h);
     if (to.w < 0) ret = ret.flipH();
     if (to.light != null) {
-      var minLight = 0xB0;
+      var minLight = to.id == "bgs-bar-light" ? 0xC0 : 0xB0;
+      trace(to.id, minLight);
       var b = Bitmap.fromColour(to.w + 60, to.h + 72, to.light.setAi(minLight));
       if (ret != null) b.blit(30, 36, ret.apply((col, x, y) -> {
         to.light.setAi(minLight - ((col.ai / 0xFF) * minLight).floor());

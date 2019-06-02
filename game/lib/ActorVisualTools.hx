@@ -17,6 +17,7 @@ class ActorVisualTools {
   }
   
   public static function visual(of:String, ?index:Int = 0):ActorVisual {
+    var orig = of;
     var spl = of.split("-");
     var flipH = false;
     var light = null;
@@ -30,11 +31,14 @@ class ActorVisualTools {
       of = spl.join("-");
       light = Colour.fromARGB32(switch (of) {
         case "bgs-home": 0xFF4E3634;
+        case "bgs-bar": 0xFF261046;
         case _: 0xAA000000;
       });
     }
     var pos = (switch (of) {
-      case "character-dbg": {x: 8 + index * 40, y: 0, w: 40, h: 80};
+      case "character-dbg": {x: 8 + index * 40, y: 0, w: 40, h: 64};
+      case "character-player": {x: 8 + index * 40, y: 88, w: 40, h: 64};
+      case "character-bobbard": {x: 8 + index * 40, y: 64, w: 40, h: 24};
       case "metro-bg": {x: 0, y: 0, w: 400, h: 300};
       case "metro-area": {x: index * 32, y: 304, w: 32, h: 32};
       case "metro-train": {x: 96, y: 304, w: 16, h: 16};
@@ -47,9 +51,10 @@ class ActorVisualTools {
       case "cyber-unit": {x: 80 + index * 16, y: 16, w: 16, h: 16};
       case "cyber-unit-over": {x: 80 + index * 16, y: 32, w: 16, h: 16};
       case "cyber-button": {x: 80, y: 48 + index * 24, w: 72, h: 24};
-      case "bgs-home": {x: 0, y: 0 + index * 128, w: 460, h: 128};
+      case "bgs-home": {x: 0, y: 0 + index * 128, w: 464, h: 128};
+      case "bgs-bar": {x: 0, y: 3 * 128 + index * 128, w: 464, h: 128};
       case _: throw 'no such visual $of';
     });
-    return {source: spl[0], light: light, x: pos.x, y: pos.y, w: flipH ? -pos.w : pos.w, h: pos.h};
+    return {source: spl[0], light: light, id: light != null ? orig : null, x: pos.x, y: pos.y, w: flipH ? -pos.w : pos.w, h: pos.h};
   }
 }

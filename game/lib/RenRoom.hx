@@ -5,18 +5,22 @@ class Flicker {
   public var min:Int;
   public var r:Int;
   public var cur:Int = 0;
+  public var min2:Int;
+  public var r2:Int;
   
-  public function new(?min:Int = 60, ?r:Int = 220) {
+  public function new(?min:Int = 60, ?r:Int = 220, ?min2:Int = 1, ?r2:Int = 4) {
     this.min = min;
     this.r = r;
+    this.min2 = min2;
+    this.r2 = r2;
   }
   
   public function tick():Bool {
     var active = false;
     if (ph++ >= cur) {
-      active = true;
+      active = !active;
       ph = 0;
-      cur = Choice.nextBool() ? 0 : min + Std.random(r);
+      cur = active ? (min2 + Std.random(r2)) : (min + Std.random(r));
     }
     return active;
   }
@@ -29,6 +33,7 @@ typedef Bubble = {
   ,y:Float
   ,ph:Int
   ,id:Int
+  ,?then:()->Void
 };
 
 class RenRoom extends Ren {
@@ -40,12 +45,37 @@ class RenRoom extends Ren {
       ,{type: Visual("bgs-home-light", 2), offX: -30, offY: -36}
       ,{type: Visual("bgs-home-light", -2), offX: -30, offY: -36, visible: false}
     ], [
-      {id: "lamp", name: "Lamp", x: 101, y: 38, w: 13, h: 8}
+      {id: "lamp", name: "Lamp", x: 101, y: 38, w: 13, h: 8, interactX: 200}
     ], {
       var flicker = new Flicker();
       (ren) -> {
         ren.room.layers[3].visible = !flicker.tick();
         ren.room.layers[4].visible = !ren.room.layers[3].visible;
+      };
+    })
+    ,Bar => new Room(Bar, Colour.fromARGB32(0xFF261046), 0, 36, 464, [
+       {type: Visual("bgs-bar", 0)}
+      ,{type: Character(Bobbard, 405), offY: 59}
+      ,{type: Character(Player, 350), offY: 59}
+      ,{type: Visual("bgs-bar-light", 1), offX: -30, offY: -36}
+      ,{type: Visual("bgs-bar-light", 2), offX: -30, offY: -36}
+      ,{type: Visual("bgs-bar-light", 3), offX: -30, offY: -36}
+      ,{type: Visual("bgs-bar-light", -2), offX: -30, offY: -36, visible: false}
+      ,{type: Visual("bgs-bar-light", -2), offX: -30, offY: -36, visible: false}
+      ,{type: Visual("bgs-bar-light", -2), offX: -30, offY: -36, visible: false}
+    ], [
+      {id: "bobbard", name: "Bobbard", x: 405 - 12, y: 59, w: 24, h: 24, interactX: 360}
+    ], {
+      var ph = 0;
+      (ren) -> {
+        var active = [0, 1, 2, 0, 2, 1, 0, 1, 0, 2, 1, 2, 0, 2, 1, 2][(ph++ >> 5) % 16];
+        var li = 3;
+        ren.room.layers[li + 0].visible = active == 0;
+        ren.room.layers[li + 1].visible = active == 1;
+        ren.room.layers[li + 2].visible = active == 2;
+        ren.room.layers[li + 3 + 0].visible = active == 0 && !ren.room.layers[li + 0].visible;
+        ren.room.layers[li + 3 + 1].visible = active == 1 && !ren.room.layers[li + 1].visible;
+        ren.room.layers[li + 3 + 2].visible = active == 2 && !ren.room.layers[li + 2].visible;
       };
     })
   ];
@@ -54,6 +84,7 @@ class RenRoom extends Ren {
   
   var bubbleId = 0;
   public var bubbles:Array<Bubble> = [];
+  public var bubbleThens:Int = 0;
   
   public var blocked:Bool = false;
   public var interactiveHover:String;
@@ -78,6 +109,11 @@ class RenRoom extends Ren {
     interactiveX = [];
     interactiveY = [];
     blocked = false;
+    for (l in room.layers) switch (l.type) {
+      case Character(Player, x): if (playerAtX == null) playerAtX = x;
+      case Character(c, x): lib.Character.chars[c].place(x);
+      case _:
+    }
     if (playerAtX != null) {
       lib.Character.chars[Player].place(playerAtX);
       camX.setTo(lib.Character.chars[Player].x, true);
@@ -123,8 +159,8 @@ class RenRoom extends Ren {
         for (b in bubbles) {
           UIX.Group('${b.id}', [
             At(b.x, b.y.floor(), [
-               Text(b.txt, 'speech stroke ${b.cls}', 130, 40)
-              ,Text(b.txt, 'speech ${b.cls}', 130, 40)
+               Text(b.txt, 'speech stroke ${b.cls}', 80, 40)
+              ,Text(b.txt, 'speech ${b.cls}', 80, 40)
             ])
           ]);
         }
@@ -147,36 +183,58 @@ class RenRoom extends Ren {
     ECA.handleEvent(EnteredRoom(room.name));
   }
   
-  public function sayBy(txt:String, c:Character):Void {
-    say(txt, c.x, 'by-${c.name}');
+  public function sayBy(txt:String, c:Character, ?then:()->Void):Void {
+    say(txt, c.x - 40, 'by-${c.name}', then);
   }
   
-  public function say(txt:String, x:Int, cls:String):Void {
+  public function say(txt:String, x:Int, cls:String, ?then:()->Void):Void {
     for (b in bubbles) {
       if (b.txt == txt) return;
     }
-    if (x < 10) x = 10;
+    var align = " center";
+    if (x < 10) {
+      x = 10;
+      align = " left";
+    }
     if (x > 400 - 140) {
       x = 400 - 140;
-      cls += " right";
+      align = " right";
     }
     bubbles.push({
        txt: txt
-      ,cls: cls
+      ,cls: cls + align
       ,x: x
       ,y: 70
-      ,ph: -60 //txt.split(" ").length * -30
+      ,ph: -150 //txt.split(" ").length * -30
       ,id: bubbleId++
+      ,then: then
     });
+    bubbleThens++;
+    blocked = true;
   }
   
   function onInteract(i:RoomInteractive):Void {
     if (blocked) return;
-    ECA.handleEvent(Interacted(room.name, i.id));
+    if (i.interactX != null) {
+      lib.Character.chars[Player].walk(i.interactX, () -> ECA.handleEvent(Interacted(room.name, i.id)));
+    } else ECA.handleEvent(Interacted(room.name, i.id));
+  }
+  
+  override public function mouse(e:MouseEvent):Bool {
+    if (blocked && bubbleThens > 0 && e.match(Up(_, _))) {
+      for (b in bubbles) {
+        if (b.then != null) {
+          b.ph = b.ph.max(0);
+          return true;
+        }
+      }
+    }
+    return super.mouse(e);
   }
   
   public function new() {
     ui = new UI([]);
+    camX.minDist = 0.5;
   }
   
   override public function tick():Void {
@@ -190,6 +248,11 @@ class RenRoom extends Ren {
     bubbles = [ for (b in bubbles) {
       if (b.ph >= 0) b.y -= b.ph / 25;
       b.ph++;
+      if (b.ph > 0 && b.then != null) {
+        b.then();
+        b.then = null;
+        if (--bubbleThens == 0) blocked = false;
+      }
       if (b.y < -40) continue;
       b;
     } ];
@@ -257,7 +320,7 @@ class RoomLayer {
 
 enum RoomLayerType {
   Visual(_:String, ?index:Int);
-  Character(_:CharName);
+  Character(_:CharName, ?placeAt:Int);
 }
 
 typedef RoomInteractive = {
@@ -269,6 +332,6 @@ typedef RoomInteractive = {
   ,y:Int
   ,w:Int
   ,h:Int
-  ,?maxDist:Int
+  ,?interactX:Int
   ,?extraSize:Int
 };

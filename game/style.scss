@@ -1,0 +1,66 @@
+#game {
+  display: block;
+  height: 600px;
+  overflow: hidden;
+  position: relative;
+  user-select: none;
+  width: 800px;
+  & > div {
+    height: 600px;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 800px;
+  }
+}
+#texts div {
+  color: #362c64;
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  font-weight: 100;
+  left: 0;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  &.left { text-align: left; }
+  &.center { text-align: center; }
+  &.right { text-align: right; }
+  &.metro {
+    color: #c9dae4;
+  }
+  &.stroke {
+    -webkit-text-stroke: 3px #362c64;
+  }
+  &.big-button {
+    color: #c9dae4;
+    font-size: 19px;
+    font-weight: 400;
+    line-height: 48px;
+    text-align: center;
+  }
+  &.tooltip {
+    color: #c9dae4;
+    font-size: 20px;
+    opacity: 0;
+    transition: opacity .4s;
+    &.hold {
+      color: #bac6d2;
+    }
+    &.hover, &.hold {
+      opacity: 1;
+    }
+  }
+  &.speech {
+    animation: fadein .4s;
+    color: #c9dae4;
+    font-size: 20px;
+    &.by-Player {
+      //color: #5555ee;
+    }
+  }
+}
+
+@keyframes fadein {
+  0% { opacity: 0 }
+  100% { opacity: 1 }
+}
